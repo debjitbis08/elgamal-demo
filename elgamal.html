@@ -1,0 +1,128 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <title>ElGamal Encryption Playground</title>
+    <link type="text/css" rel="stylesheet" href="css/elgamal.css"/>
+  </head>
+  <body>
+    <div id="wrapper" class="clearfix">
+      <h1>ElGamal Encryption Playground</h1>
+      <p>This is a small application you can use to understand how Elgamal encryption works. This is toy implementation so please don't try huge numbers or use for serious work.</p>
+      <p>Presently this will not run on old IE browsers, try a modern browser. This will be fixed in future.</p>
+      <div class="machine clearfix" id="aliceMachine">
+        <h2>Alice's Machine:</h2>
+        <div class="main">
+          <ul class="errors"></ul>
+          <form>
+            <p id="prime">
+              <label for="txtPrime">
+                Enter a prime
+                <img src="img/help.png" alt="(?)" title="A prime number (or a prime) is a natural number greater than 1 that has no positive divisors other than 1 and itself."/>
+              </label>
+              <input type="text" id="txtPrime"/>
+              <span class="errorInfo">Please enter a prime number</span>
+            </p>
+
+            <p id="generator">
+              <label for="txtG">
+                Enter g
+                <img src="img/help.png" alt="(?)" title="Primitive root of p will be a number such that when x goes from 1 to p-1 then g^x (mod p) goes through all the numbers in the set [1, 2,...,(p-1)] in some order. Some roots of p are: "/>
+              </label>
+              <input type="text" id="txtG"/><button id="getGenerators" class="helpers">Get Generators</button>
+              <span class="errorInfo">Not a valid generator</span>
+            </p>
+
+            <p id="privateKey">
+              <label for="txtPrivateKey">
+                Enter Private Key
+                <img src="img/help.png" alt="(?)" title="A number greater than 0 and less than p - 1"/>
+              </label>
+              <input type="text" id="txtPrivateKey"/>
+              <span class="errorInfo">Number should be greater than 0 and less than (p-1)</span>
+            </p>
+
+            <button id="getPublicKey">Generate &amp; Publish Public Key</button>
+
+          </form>
+
+          <div id="messageDisplay" class="display">
+            Bob's Message:<br/>
+            <span class="data"></span>
+          </div>
+
+          <button id="decrypt">Decrypt</button>
+        </div>
+        <div class="extrainfo"></div>
+      </div>
+      <div id="wire">
+
+        <div id="keyDisplay" class="display">
+          Alice's Public Key:<br/>
+          <span class="data"></span>
+        </div>
+
+        <div id="encryptedMsg" class="display">
+          Bob's encrypted message:<br/>
+          <span class="data"></span>
+        </div>
+
+      </div>
+      <div class="machine clearfix" id="bobMachine">
+        <h2>Bob's Machine:</h2>
+        <div class="main">
+          <form>
+            <p id="encryptPrivate">
+              <label for="txtEncryptPrivate">
+                Private Key for Encryption
+                <img src="img/help.png" alt="(?)" title="Should be greater than or equal to 0 and less than p - 1."/>
+              </label>
+              <input type="text" id="txtEncryptPrivate"/><button style="display:none" id="getRandomKey" class="helpers">Get Random Key</button>
+              <span class="errorInfo">Should be greater than or equal to 0 and less than p - 1</span>
+            </p>
+
+            <p id="message">
+              <label for="txtMessage">
+                Message
+                <img src="img/help.png" alt="(?)" title="Should be greater than 0 and less than or equal to p."/>
+              </label>
+              <input type="text" id="txtMessage"/>
+              <span class="errorInfo">Should be greater than 0 and less than p.</span>
+            </p>
+
+            <button id="encrypt">Encrypt &amp; Send</button>
+
+          </form>
+        </div>
+        <div class="extrainfo"></div>
+      </div>
+      <div id="references">
+        <h3>References</h3>
+        <ul>
+          <li>
+            <a href="http://en.wikipedia.org/wiki/ElGamal_encryption" target="_blank">
+              http://en.wikipedia.org/wiki/ElGamal_encryption
+            </a>
+          </li>
+          <li>
+            <a href="http://ritter.vg/security_adventures_elgamal.html" target="_blank">
+              http://ritter.vg/security_adventures_elgamal.html
+            </a>
+          </li>
+          <li>
+            <a href="http://www.bluetulip.org/programs/primitive.html" target="_blank">
+              http://www.bluetulip.org/programs/primitive.html
+            </a>
+          </li>
+          <li>
+            <a href="http://cmsc414.wordpress.com/2009/09/23/el-gamal-examples/" target="_blank">
+              http://cmsc414.wordpress.com/2009/09/23/el-gamal-examples/
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <script src="js/elgamal.js"></script>
+    <script src="js/machines.js"></script>
+  </body>
+</html>
