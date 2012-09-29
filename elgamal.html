@@ -18,7 +18,7 @@
             <p id="prime">
               <label for="txtPrime">
                 Enter a prime
-                <img src="img/help.png" alt="(?)" title="A prime number (or a prime) is a natural number greater than 1 that has no positive divisors other than 1 and itself."/>
+                <span title="A prime number (or a prime) is a natural number greater than 1 that has no positive divisors other than 1 and itself.">(?)</span>
               </label>
               <input type="text" id="txtPrime"/>
               <span class="errorInfo">Please enter a prime number</span>
@@ -27,7 +27,7 @@
             <p id="generator">
               <label for="txtG">
                 Enter g
-                <img src="img/help.png" alt="(?)" title="Primitive root of p will be a number such that when x goes from 1 to p-1 then g^x (mod p) goes through all the numbers in the set [1, 2,...,(p-1)] in some order. Some roots of p are: "/>
+                <span title="Primitive root of p will be a number such that when x goes from 1 to p-1 then g^x (mod p) goes through all the numbers in the set [1, 2,...,(p-1)] in some order. Some roots of p are: ">(?)</span>
               </label>
               <input type="text" id="txtG"/><button id="getGenerators" class="helpers">Get Generators</button>
               <span class="errorInfo">Not a valid generator</span>
@@ -36,7 +36,7 @@
             <p id="privateKey">
               <label for="txtPrivateKey">
                 Enter Private Key
-                <img src="img/help.png" alt="(?)" title="A number greater than 0 and less than p - 1"/>
+                <span title="A number greater than 0 and less than p - 1">(?)</span>
               </label>
               <input type="text" id="txtPrivateKey"/>
               <span class="errorInfo">Number should be greater than 0 and less than (p-1)</span>
@@ -75,7 +75,7 @@
             <p id="encryptPrivate">
               <label for="txtEncryptPrivate">
                 Private Key for Encryption
-                <img src="img/help.png" alt="(?)" title="Should be greater than or equal to 0 and less than p - 1."/>
+                <span title="Should be greater than or equal to 0 and less than p - 1.">(?)</span>
               </label>
               <input type="text" id="txtEncryptPrivate"/><button style="display:none" id="getRandomKey" class="helpers">Get Random Key</button>
               <span class="errorInfo">Should be greater than or equal to 0 and less than p - 1</span>
@@ -84,7 +84,7 @@
             <p id="message">
               <label for="txtMessage">
                 Message
-                <img src="img/help.png" alt="(?)" title="Should be greater than 0 and less than or equal to p."/>
+                <span title="Should be greater than 0 and less than or equal to p.">(?)</span>
               </label>
               <input type="text" id="txtMessage"/>
               <span class="errorInfo">Should be greater than 0 and less than p.</span>

@@ -1,8 +1,62 @@
 /* Machines.js */
 
+var findElementsByClass = function(parentElement, className) {
+    var results = [];
+    if (parentElement.getElementsByClassName === undefined) {
+        var hasClassName = new RegExp("(?:^|\\s)" + className + "(?:$|\\s)"),
+            allElements = parentElement.getElementsByTagName("*"),
+            element, i;
+        
+        for (i = 0; allElements[i] !== null && allElements[i] !== undefined; i++) {
+            element = allElements[i];
+            var elementClass = element.className;
+            if (elementClass && elementClass.indexOf(className) !== -1 && hasClassName.test(elementClass))
+                results.push(element);
+    }
+
+    return results;
+     
+  } else {
+    results = parentElement.getElementsByClassName(className);
+    return results;
+  }
+};
+
+var bind = (function( window, document ) {
+    if ( document.addEventListener ) {
+        return function( elem, type, cb ) {
+            if ( (elem && !elem.length) || elem === window ) {
+                elem.addEventListener(type, cb, false );
+            }
+            else if ( elem && elem.length ) {
+                var len = elem.length;
+                for ( var i = 0; i < len; i++ ) {
+                    bind( elem[i], type, cb );
+                }
+            }
+        };
+    }
+    else if ( document.attachEvent ) {
+        return function ( elem, type, cb ) {
+            if ( (elem && !elem.length) || elem === window ) {
+                elem.attachEvent( 'on' + type, function () {
+                    return cb.call(elem, window.event);
+                });
+            }
+            else if ( elem.length ) {
+                var len = elem.length;
+                for ( var i = 0; i < len; i++ ) {
+                    bind( elem[i], type, cb );
+                }
+            }
+        };
+    }
+})( this, document );
+
+
 var wire = {
-    'keyDisplay': document.getElementById('keyDisplay').getElementsByClassName('data')[0],
-    'encryptedMsgDisplay': document.getElementById('encryptedMsg').getElementsByClassName('data')[0]
+    'keyDisplay': findElementsByClass(document.getElementById('keyDisplay'), 'data')[0],
+    'encryptedMsgDisplay': findElementsByClass(document.getElementById('encryptedMsg'), 'data')[0]
 };
 
 wire.render = function () {
@@ -22,7 +76,11 @@ wire.render = function () {
     },
     g, p, x, eg;
 
-    receiver.getGeneratorBtn.addEventListener('click', function (e) {
+    bind(receiver.el.getElementsByTagName('form')[0], 'submit', function (e) {
+        return false;
+    });
+
+    bind(receiver.getGeneratorBtn, 'click', function (e) {
 
         p = parseInt(document.getElementById( receiver.primeFieldId      ).getElementsByTagName('input')[0].value, 10);
 
@@ -31,15 +89,16 @@ wire.render = function () {
         for (i = 0; i < roots.length; i += 1) {
             html += roots[i] + ' ';
         }
-        receiver.el.getElementsByClassName('extrainfo')[0].innerHTML = html;
+        findElementsByClass(receiver.el, 'extrainfo')[0].innerHTML = html;
 
-        e.preventDefault();
+        if (e.preventDefault) e.preventDefault();
+        else e.returnValue = false;
 
     }, false);
 
-    receiver.getPublicKeyBtn.addEventListener('click', function (e) {
+    bind(receiver.getPublicKeyBtn, 'click', function (e) {
 
-        var errorFields = receiver.el.getElementsByClassName('error'), i = 0, publicKey;
+        var errorFields = findElementsByClass(receiver.el, 'error'), i = 0, publicKey;
         
         for (i = 0; i < errorFields.length; i += 1) {
             errorFields[i].className = '';
@@ -75,17 +134,21 @@ wire.render = function () {
             }
         }
 
-        e.preventDefault();
+        if (e.preventDefault) e.preventDefault();
+        else e.returnValue = false;
 
     }, false);
 
-    receiver.decryptBtn.addEventListener('click', function (e) {
+    bind(receiver.decryptBtn, 'click', function (e) {
 
         if (!wire.message) {
             alert('Bob has not sent you a message yet.');
-            return;
+            return false;
         }
-        document.getElementById('messageDisplay').getElementsByClassName('data')[0].innerHTML = eg.decrypt(wire.message);
+        findElementsByClass(document.getElementById('messageDisplay'), 'data')[0].innerHTML = eg.decrypt(wire.message);
+
+        if (e.preventDefault) e.preventDefault();
+        else e.returnValue = false;
 
     }, false);
 
@@ -100,16 +163,18 @@ wire.render = function () {
         'encryptMsgBtn': document.getElementById('encrypt')
     };
 
-    sender.encryptMsgBtn.addEventListener('click', function (e) {
+    bind(sender.el.getElementsByTagName('form')[0], 'submit', function (e) {
+        return false;
+    });
 
-        e.preventDefault();
+    bind(sender.encryptMsgBtn, 'click', function (e) {
 
         if (!wire.publicKey) {
             alert('You need Alice\'s public key to send her a message');
-            return;
+            return false;
         }
 
-        var errorFields = sender.el.getElementsByClassName('error'), i = 0,
+        var errorFields = findElementsByClass(sender.el, 'error'), i = 0,
             message = parseInt(document.getElementById( sender.messageFieldId ).getElementsByTagName('input')[0].value, 10),
             privateKey = parseInt(document.getElementById( sender.privateKeyFieldId ).getElementsByTagName('input')[0].value, 10);
 
@@ -119,6 +184,7 @@ wire.render = function () {
 
         try {
             wire.message = ElGamal.encrypt(message, privateKey, wire.publicKey);
+            wire.render();
         } catch (errors) {
             var i;
             for (i = 0; i < errors.length; i++) {
@@ -132,7 +198,9 @@ wire.render = function () {
                 }
             }
         }
-        wire.render();
+
+        if (e.preventDefault) e.preventDefault();
+        else e.returnValue = false;
 
     }, false);
 
