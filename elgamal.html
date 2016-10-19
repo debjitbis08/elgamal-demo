@@ -3,97 +3,132 @@
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type">
     <title>ElGamal Encryption Playground</title>
+    <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css"/>
     <link type="text/css" rel="stylesheet" href="css/elgamal.css"/>
   </head>
   <body>
-    <div id="wrapper" class="clearfix">
+    <div id="wrapper" class="container clearfix">
       <h1>ElGamal Encryption Playground</h1>
-      <p>This is a small application you can use to understand how Elgamal encryption works. This is toy implementation so please don't try huge numbers or use for serious work.</p>
-      <div class="machine clearfix" id="aliceMachine">
-        <h2>Alice's Machine:</h2>
-        <div class="main">
-          <ul class="errors"></ul>
-          <form>
-            <p id="prime">
-              <label for="txtPrime">
-                Enter a prime
-                <span title="A prime number (or a prime) is a natural number greater than 1 that has no positive divisors other than 1 and itself.">(?)</span>
-              </label>
-              <input type="text" id="txtPrime"/>
-              <span class="errorInfo">Please enter a prime number</span>
-            </p>
+      <p class="lead">This is a small application you can use to understand how Elgamal encryption works. This is toy implementation so please don't try huge numbers or use for serious work.</p>
+      <div class="row">
+        <div class="col-md-4">
+          <div class="panel panel-default machine clearfix" id="aliceMachine">
+            <div class="panel-heading"><h3 class="panel-title">Alice's Machine</h3></div>
+            <div class="panel-body main">
+              <ul class="errors"></ul>
+              <form>
+                <div class="form-group" id="prime">
+                  <label for="txtPrime">
+                    Enter a prime
+                    <span class="glyphicon glyphicon-info-sign" title="A prime number (or a prime) is a natural number greater than 1 that has no positive divisors other than 1 and itself."></span>
+                  </label>
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="txtPrime"/>
+                    <div class="input-group-btn">
+                      <button id="getGenerators" class="btn btn-default helpers" type="button">Get Generators</button>
+                    </div>
+                  </div>
+                  <span class="errorInfo">Please enter a prime number</span>
+                </div>
 
-            <p id="generator">
-              <label for="txtG">
-                Enter g
-                <span title="Primitive root of p will be a number such that when x goes from 1 to p-1 then g^x (mod p) goes through all the numbers in the set [1, 2,...,(p-1)] in some order. Some roots of p are: ">(?)</span>
-              </label>
-              <input type="text" id="txtG"/><button id="getGenerators" class="helpers">Get Generators</button>
-              <span class="errorInfo">Not a valid generator</span>
-            </p>
+                <div class="form-group" id="generator">
+                  <label for="txtG">
+                    Choose g
+                    <span class="glyphicon glyphicon-info-sign" title="Primitive root of p will be a number such that when x goes from 1 to p-1 then g^x (mod p) goes through all the numbers in the set [1, 2,...,(p-1)] in some order"></span>
+                  </label>
+                  <!--<input type="text" class="form-control" id="txtG"/>-->
+                  <div id="generatorInfo">Click <button class="btn btn-xs btn-default" type="button">Get Generator</button> button above to see list of generators here</div>
+                  <div id="selectG"></div>
+                  <span class="errorInfo">Not a valid generator</span>
+                </div>
 
-            <p id="privateKey">
-              <label for="txtPrivateKey">
-                Enter Private Key
-                <span title="A number greater than 0 and less than p - 1">(?)</span>
-              </label>
-              <input type="text" id="txtPrivateKey"/>
-              <span class="errorInfo">Number should be greater than 0 and less than (p-1)</span>
-            </p>
+                <div class="form-group" id="privateKey">
+                  <label for="txtPrivateKey">
+                    Enter Private Key
+                    <span class="glyphicon glyphicon-info-sign" title="A number greater than 0 and less than p - 1"></span>
+                  </label>
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="txtPrivateKey"/>
+                    <div class="input-group-btn">
+                      <button id="getRandomPrivateKey" class="btn btn-default helpers" type="button">Get Random Key</button>
+                    </div>
+                  </div>
+                  <span class="errorInfo">Number should be greater than 0 and less than (p-1)</span>
+                </div>
 
-            <button id="getPublicKey">Generate &amp; Publish Public Key</button>
+                <button id="getPublicKey" class="btn btn-success" type="button">
+                  Generate &amp; Publish Public Key  &nbsp;<span class="glyphicon glyphicon-arrow-right"></span>
+                </button>
 
-          </form>
+              </form>
 
-          <div id="messageDisplay" class="display">
-            Bob's Message:<br/>
-            <span class="data"></span>
+              <div class="panel panel-default" style="margin-top: 10px;">
+                <div class="panel-body">
+                  <div id="messageDisplay">
+                    <button id="decrypt" class="btn btn-primary btn-sm" type="button">Decrypt</button> Bob's Message<br/>
+                    <span class="data"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="extrainfo"></div>
+            </div>
           </div>
-
-          <button id="decrypt">Decrypt</button>
-        </div>
-        <div class="extrainfo"></div>
-      </div>
-      <div id="wire">
-
-        <div id="keyDisplay" class="display">
-          Alice's Public Key:<br/>
-          <span class="data"></span>
         </div>
 
-        <div id="encryptedMsg" class="display">
-          Bob's encrypted message:<br/>
-          <span class="data"></span>
+        <div class="col-md-4">
+          <div id="wire">
+            <div class="wire-data">
+              <div id="keyDisplay" class="display">
+                Alice's Public Key<br/>
+                <span class="data">--</span>
+              </div>
+
+              <div id="encryptedMsg" class="display">
+                Bob's encrypted message<br/>
+                <span class="data">--</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-      </div>
-      <div class="machine clearfix" id="bobMachine">
-        <h2>Bob's Machine:</h2>
-        <div class="main">
-          <form>
-            <p id="encryptPrivate">
-              <label for="txtEncryptPrivate">
-                Private Key for Encryption
-                <span title="Should be greater than or equal to 0 and less than p - 1.">(?)</span>
-              </label>
-              <input type="text" id="txtEncryptPrivate"/><button style="display:none" id="getRandomKey" class="helpers">Get Random Key</button>
-              <span class="errorInfo">Should be greater than or equal to 0 and less than p - 1</span>
-            </p>
+        <div class="col-md-4">
+          <div class="panel panel-default machine clearfix" id="bobMachine">
+            <div class="panel-heading"><h3 class="panel-title">Bob's Machine</h3></div>
+            <div class="panel-body main">
+              <form>
+                <div class="form-group" id="encryptPrivate">
+                  <label for="txtEncryptPrivate">
+                    Private Key for Encryption
+                    <span class="glyphicon glyphicon-info-sign" title="Should be greater than or equal to 0 and less than p - 1."></span>
+                  </label>
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="txtEncryptPrivate"/>
+                    <div class="input-group-btn">
+                      <button id="getRandomEncyptKey" class="btn btn-default helpers" type="button">Get Random Key</button>
+                    </div>
+                  </div>
+                  <span class="errorInfo">Should be greater than or equal to 0 and less than p - 1</span>
+                </div>
 
-            <p id="message">
-              <label for="txtMessage">
-                Message
-                <span title="Should be greater than 0 and less than or equal to p.">(?)</span>
-              </label>
-              <input type="text" id="txtMessage"/>
-              <span class="errorInfo">Should be greater than 0 and less than p.</span>
-            </p>
+                <div class="form-group" id="message">
+                  <label for="txtMessage">
+                    Message
+                    <span class="glyphicon glyphicon-info-sign" title="Should be greater than 0 and less than or equal to p."></span>
+                  </label>
+                  <input type="text" class="form-control" id="txtMessage"/>
+                  <span class="errorInfo">Should be greater than 0 and less than p.</span>
+                </div>
 
-            <button id="encrypt">Encrypt &amp; Send</button>
+                <button id="encrypt" class="btn btn-success" type="button">
+                  <span class="glyphicon glyphicon-arrow-left"></span>&nbsp; Encrypt &amp; Send
+                </button>
 
-          </form>
+              </form>
+              <div class="extrainfo"></div>
+            </div>
+          </div>
         </div>
-        <div class="extrainfo"></div>
       </div>
       <div id="references">
         <h3>References</h3>

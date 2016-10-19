@@ -6,7 +6,7 @@ var findElementsByClass = function(parentElement, className) {
         var hasClassName = new RegExp("(?:^|\\s)" + className + "(?:$|\\s)"),
             allElements = parentElement.getElementsByTagName("*"),
             element, i;
-        
+
         for (i = 0; allElements[i] !== null && allElements[i] !== undefined; i++) {
             element = allElements[i];
             var elementClass = element.className;
@@ -15,7 +15,7 @@ var findElementsByClass = function(parentElement, className) {
     }
 
     return results;
-     
+
   } else {
     results = parentElement.getElementsByClassName(className);
     return results;
@@ -72,7 +72,10 @@ wire.render = function () {
         'privateKeyFieldId': 'privateKey',
         'getPublicKeyBtn': document.getElementById('getPublicKey'),
         'decryptBtn': document.getElementById('decrypt'),
-        'getGeneratorBtn': document.getElementById('getGenerators')
+        'getGeneratorBtn': document.getElementById('getGenerators'),
+        'generatorInfo': document.getElementById('generatorInfo'),
+        'generatorList': document.getElementById('selectG'),
+        'randomPrivateKeyBtn': document.getElementById('getRandomPrivateKey')
     },
     g, p, x, eg;
 
@@ -86,10 +89,18 @@ wire.render = function () {
 
         var roots = ElGamal.getAllRoots(p), i = 0, html = '';
 
-        for (i = 0; i < roots.length; i += 1) {
-            html += roots[i] + ' ';
-        }
-        findElementsByClass(receiver.el, 'extrainfo')[0].innerHTML = html;
+        html = "Generators for " + p + " are: " + roots.map(function (r) { return String(r); }).join(", ");
+
+        // findElementsByClass(receiver.el, 'extrainfo')[0].innerHTML = html;
+
+        receiver.generatorInfo.style.display = "none";
+        receiver.generatorList.innerHTML = [
+            '<select>',
+            roots.map(function (r) {
+                return '<option value="' + r + '">' + r + '</option>';
+            }),
+            '</select>'
+        ].join('');
 
         if (e.preventDefault) e.preventDefault();
         else e.returnValue = false;
@@ -99,14 +110,21 @@ wire.render = function () {
     bind(receiver.getPublicKeyBtn, 'click', function (e) {
 
         var errorFields = findElementsByClass(receiver.el, 'error'), i = 0, publicKey;
-        
+
         for (i = 0; i < errorFields.length; i += 1) {
             errorFields[i].className = '';
         }
 
-        g = parseInt(document.getElementById( receiver.generatorFieldId  ).getElementsByTagName('input')[0].value, 10);
-        p = parseInt(document.getElementById( receiver.primeFieldId      ).getElementsByTagName('input')[0].value, 10);
-        x = parseInt(document.getElementById( receiver.privateKeyFieldId ).getElementsByTagName('input')[0].value, 10);
+        function getG() {
+            var gSelect = receiver.generatorList.getElementsByTagName('select')[0];
+
+            return parseInt(gSelect.options[gSelect.selectedIndex].value, 10);
+
+        }
+
+        g = getG();
+        p = parseInt(document.getElementById(receiver.primeFieldId      ).getElementsByTagName('input')[0].value, 10);
+        x = parseInt(document.getElementById(receiver.privateKeyFieldId ).getElementsByTagName('input')[0].value, 10);
 
 
         receiver.privateKey = x;
@@ -152,6 +170,12 @@ wire.render = function () {
 
     }, false);
 
+    bind(receiver.randomPrivateKeyBtn, 'click', function (e) {
+        var p = parseInt(document.getElementById( receiver.primeFieldId      ).getElementsByTagName('input')[0].value, 10);
+        var key = Math.ceil(Math.random() * 10);
+
+        document.getElementById(receiver.privateKeyFieldId ).getElementsByTagName('input')[0].value = key;
+    });
 }());
 
 (function () {
@@ -160,7 +184,8 @@ wire.render = function () {
         'el': document.getElementById('bobMachine'),
         'privateKeyFieldId': 'encryptPrivate',
         'messageFieldId': 'message',
-        'encryptMsgBtn': document.getElementById('encrypt')
+        'encryptMsgBtn': document.getElementById('encrypt'),
+        'randomKeyBtn': document.getElementById('getRandomEncyptKey')
     };
 
     bind(sender.el.getElementsByTagName('form')[0], 'submit', function (e) {
@@ -204,4 +229,10 @@ wire.render = function () {
 
     }, false);
 
+    bind(sender.randomKeyBtn, 'click', function (e) {
+        var p = wire.publicKey.p;
+        var key = Math.ceil(Math.random() * 10);
+
+        document.getElementById(sender.privateKeyFieldId ).getElementsByTagName('input')[0].value = key;
+    });
 }());
