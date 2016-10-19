@@ -66,7 +66,7 @@
                 <div class="panel-body">
                   <div id="messageDisplay">
                     <button id="decrypt" class="btn btn-primary btn-sm" type="button">Decrypt</button> Bob's Message<br/>
-                    <span class="data"></span>
+                    <div class="data" style="font-weight: bold;margin-top:10px;"></div>
                   </div>
                 </div>
               </div>
@@ -132,7 +132,7 @@
       </div>
       <div id="references">
         <h3>References</h3>
-        <ul>
+        <ul class="list-unstyled">
           <li>
             <a href="http://en.wikipedia.org/wiki/ElGamal_encryption" target="_blank">
               http://en.wikipedia.org/wiki/ElGamal_encryption
@@ -155,7 +155,12 @@
           </li>
         </ul>
       </div>
+      <hr>
+      <footer class="footer">
+        <p>Copyright &copy; 2016 Debjit Biswas</p>
+      </footer>
     </div>
+    <script src="js/primes.js"></script>
     <script src="js/elgamal.js"></script>
     <script src="js/machines.js"></script>
   </body>

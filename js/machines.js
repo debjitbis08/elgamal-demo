@@ -86,21 +86,25 @@ wire.render = function () {
     bind(receiver.getGeneratorBtn, 'click', function (e) {
 
         p = parseInt(document.getElementById( receiver.primeFieldId      ).getElementsByTagName('input')[0].value, 10);
+        document.getElementById(receiver.primeFieldId).className = document.getElementById(receiver.primeFieldId).className.replace(/error/, "");
 
-        var roots = ElGamal.getAllRoots(p), i = 0, html = '';
-
-        html = "Generators for " + p + " are: " + roots.map(function (r) { return String(r); }).join(", ");
-
-        // findElementsByClass(receiver.el, 'extrainfo')[0].innerHTML = html;
+        var roots = [];
 
         receiver.generatorInfo.style.display = "none";
-        receiver.generatorList.innerHTML = [
-            '<select>',
-            roots.map(function (r) {
-                return '<option value="' + r + '">' + r + '</option>';
-            }),
-            '</select>'
-        ].join('');
+        try {
+            receiver.generatorList.innerHTML = '<select id="generatorSelect"></select>';
+            generatorListEl = document.getElementById('generatorSelect');
+            ElGamal.getAllRootsAsync(p, function (roots) {
+                generatorListEl.innerHTML += roots.map(function (r) {
+                    return '<option value="' + r + '">' + r + '</option>';
+                }).join('');
+            });
+
+        } catch (e) {
+            document.getElementById(receiver.primeFieldId).className += " error";
+            receiver.generatorInfo.style.display = "block";
+            receiver.generatorList.innerHTML = "";
+        }
 
         if (e.preventDefault) e.preventDefault();
         else e.returnValue = false;
@@ -163,7 +167,7 @@ wire.render = function () {
             alert('Bob has not sent you a message yet.');
             return false;
         }
-        findElementsByClass(document.getElementById('messageDisplay'), 'data')[0].innerHTML = eg.decrypt(wire.message);
+        findElementsByClass(document.getElementById('messageDisplay'), 'data')[0].innerHTML = "Bob's decrypted message: " + eg.decrypt(wire.message);
 
         if (e.preventDefault) e.preventDefault();
         else e.returnValue = false;
@@ -172,7 +176,7 @@ wire.render = function () {
 
     bind(receiver.randomPrivateKeyBtn, 'click', function (e) {
         var p = parseInt(document.getElementById( receiver.primeFieldId      ).getElementsByTagName('input')[0].value, 10);
-        var key = Math.ceil(Math.random() * 10);
+        var key = Math.ceil(Math.random() * p);
 
         document.getElementById(receiver.privateKeyFieldId ).getElementsByTagName('input')[0].value = key;
     });
@@ -231,7 +235,7 @@ wire.render = function () {
 
     bind(sender.randomKeyBtn, 'click', function (e) {
         var p = wire.publicKey.p;
-        var key = Math.ceil(Math.random() * 10);
+        var key = Math.ceil(Math.random() * p);
 
         document.getElementById(sender.privateKeyFieldId ).getElementsByTagName('input')[0].value = key;
     });
