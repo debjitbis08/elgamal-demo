@@ -2,14 +2,59 @@
 <html>
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type">
+    <meta name="description" content="A online ElGamal encryption/decryption tool. This tool will help you understand how ElGamal encryption works.">
     <title>ElGamal Encryption Playground</title>
     <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.css">
     <link type="text/css" rel="stylesheet" href="css/elgamal.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.6.0/contrib/auto-render.min.js"></script>
   </head>
   <body>
-    <div id="wrapper" class="container clearfix">
-      <h1>ElGamal Encryption Playground</h1>
-      <p class="lead">This is a small application you can use to understand how Elgamal encryption works. This is toy implementation so please don't try huge numbers or use for serious work.</p>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <span class="navbar-brand">ElGamal Encryption Playground</span>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#" data-toggle="modal" data-target=".bs-about-modal-sm">About</a></li>
+            <li><a href="https://github.com/debjitbis08/elgamal-demo">Github</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="modal fade bs-about-modal-sm" tabindex="-1" role="dialog" aria-labelledby="about">
+      <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">About</h4>
+          </div>
+          <div class="modal-body">
+            <section>
+              <p>This is a small application you can use to understand how Elgamal encryption works. This is a toy implementation so please don't try huge numbers or use for serious work.</p>
+            </section>
+            <section>
+               <h3>Source code and Reporting Bugs</h3>
+               <p>
+                 The complete source for this application is available on
+                 <a target="_blank" href="https://github.com/debjitbis08/elgamal-demo">GitHub</a>.
+                 Please report any bugs on the Github
+                 <a target="_blank" href="https://github.com/debjitbis08/elgamal-demo/issues">issue tracker</a>.
+               </p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="wrapper" class="container clearfix" style="padding-top:80px;">
       <div class="row">
         <div class="col-md-4">
           <div class="panel panel-default machine clearfix" id="aliceMachine">
@@ -19,7 +64,7 @@
               <form>
                 <div class="form-group" id="prime">
                   <label for="txtPrime">
-                    Enter a prime
+                    Enter a prime \(p\)
                     <span class="glyphicon glyphicon-info-sign" title="A prime number (or a prime) is a natural number greater than 1 that has no positive divisors other than 1 and itself."></span>
                   </label>
                   <div class="input-group">
@@ -33,10 +78,9 @@
 
                 <div class="form-group" id="generator">
                   <label for="txtG">
-                    Choose g
+                    Choose \(g\)
                     <span class="glyphicon glyphicon-info-sign" title="Primitive root of p will be a number such that when x goes from 1 to p-1 then g^x (mod p) goes through all the numbers in the set [1, 2,...,(p-1)] in some order"></span>
                   </label>
-                  <!--<input type="text" class="form-control" id="txtG"/>-->
                   <div id="generatorInfo">Click <button class="btn btn-xs btn-default" type="button">Get Generator</button> button above to see list of generators here</div>
                   <div id="selectG"></div>
                   <span class="errorInfo">Not a valid generator</span>
@@ -44,7 +88,7 @@
 
                 <div class="form-group" id="privateKey">
                   <label for="txtPrivateKey">
-                    Enter Private Key
+                    Enter Private Key \(x\)
                     <span class="glyphicon glyphicon-info-sign" title="A number greater than 0 and less than p - 1"></span>
                   </label>
                   <div class="input-group">
@@ -56,6 +100,8 @@
                   <span class="errorInfo">Number should be greater than 0 and less than (p-1)</span>
                 </div>
 
+                <p>\(h\) is calculated as \(h = g^x \ mod \ p\)</p>
+
                 <button id="getPublicKey" class="btn btn-success" type="button">
                   Generate &amp; Publish Public Key  &nbsp;<span class="glyphicon glyphicon-arrow-right"></span>
                 </button>
@@ -65,9 +111,25 @@
               <div class="panel panel-default" style="margin-top: 10px;">
                 <div class="panel-body">
                   <div id="messageDisplay">
-                    <button id="decrypt" class="btn btn-primary btn-sm" type="button">Decrypt</button> Bob's Message<br/>
-                    <div class="data" style="font-weight: bold;margin-top:10px;"></div>
+                    <div class="inbox-empty" style="display: block">
+                      You have no messages.
+                    </div>
+                    <div class="inbox-has-message" style="display: none">
+                      <div>You received a message from Bob. <button id="decrypt" class="btn btn-primary btn-sm" type="button">Decrypt</button></div>
+                      <div class="data" style="font-weight: bold;margin-top:10px;"></div>
+                    </div>
                   </div>
+                </div>
+              </div>
+              <div class="panel panel-default" style="margin-top: 10px;">
+                <div class="panel-body">
+                  <p>
+                    Message is decrypted using
+                    \[s = c{_1}^x\ mod\ p\]
+                    \[m = c{_2}\ .\ s^{-1}\ mod\ p\] which can be rewritten \(\dagger\) as
+                    \[m = c{_2}\ .\ s^{p-2}\ mod\ p\]
+                    \(\dagger\) See <a href="http://en.wikipedia.org/wiki/Euler's_theorem" target="_blank">Euler's Theorem</a>
+                  </p>
                 </div>
               </div>
 
@@ -99,7 +161,7 @@
               <form>
                 <div class="form-group" id="encryptPrivate">
                   <label for="txtEncryptPrivate">
-                    Private Key for Encryption
+                    Private Key for Encryption \(r\)
                     <span class="glyphicon glyphicon-info-sign" title="Should be greater than or equal to 0 and less than p - 1."></span>
                   </label>
                   <div class="input-group">
@@ -113,12 +175,14 @@
 
                 <div class="form-group" id="message">
                   <label for="txtMessage">
-                    Message
+                    Message \(m\)
                     <span class="glyphicon glyphicon-info-sign" title="Should be greater than 0 and less than or equal to p."></span>
                   </label>
                   <input type="text" class="form-control" id="txtMessage"/>
                   <span class="errorInfo">Should be greater than 0 and less than p.</span>
                 </div>
+
+                <p>Encrypted message is calculated as \((c{_1}, c{_2}) = (g^r \ mod \ p, (h^r \ mod \ p)m)\)</p>
 
                 <button id="encrypt" class="btn btn-success" type="button">
                   <span class="glyphicon glyphicon-arrow-left"></span>&nbsp; Encrypt &amp; Send
@@ -127,6 +191,18 @@
               </form>
               <div class="extrainfo"></div>
             </div>
+          </div>
+          <div id="gAd" style="height:300px">
+            <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+            <!-- ElGamal_link -->
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-5403915171352852"
+                 data-ad-slot="6197095241"
+                 data-ad-format="link"></ins>
+            <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
           </div>
         </div>
       </div>
@@ -156,12 +232,25 @@
         </ul>
       </div>
       <hr>
-      <footer class="footer">
-        <p>Copyright &copy; 2016 Debjit Biswas</p>
+      <footer class="footer clearfix">
+        <p class="pull-left">Copyright &copy; 2016 Debjit Biswas</p>
       </footer>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.js"></script>
     <script src="js/primes.js"></script>
     <script src="js/elgamal.js"></script>
     <script src="js/machines.js"></script>
+    <script>
+      if (/debjitbiswas\.com/.test(window.location.href)) {
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-12282646-2', 'auto');
+        ga('send', 'pageview');
+      }
+    </script>
   </body>
 </html>

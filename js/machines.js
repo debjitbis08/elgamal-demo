@@ -56,12 +56,27 @@ var bind = (function( window, document ) {
 
 var wire = {
     'keyDisplay': findElementsByClass(document.getElementById('keyDisplay'), 'data')[0],
-    'encryptedMsgDisplay': findElementsByClass(document.getElementById('encryptedMsg'), 'data')[0]
+    'encryptedMsgDisplay': findElementsByClass(document.getElementById('encryptedMsg'), 'data')[0],
+    MESSAGES: {
+      MESSAGE: 'message',
+      KEY: 'publishKey'
+    },
+    subscribers: {}
 };
 
 wire.render = function () {
     wire.keyDisplay.innerHTML = 'p: ' + this.publicKey.p + ' g: ' + this.publicKey.g + ' h: ' + this.publicKey.h;
-    wire.encryptedMsgDisplay.innerHTML = this.message.b + ', ' + this.message.c;
+    wire.encryptedMsgDisplay.innerHTML = 'c1: ' + this.message.b + ', c2: ' + this.message.c;
+};
+
+wire.publish = function (message, data) {
+    (wire.subscribers[message] || []).forEach(function (s) {
+        s(data);
+    });
+};
+
+wire.subscribe = function (message, callback) {
+    wire.subscribers[message] = wire.subscribers[message] ? wire.subscribers[message].concat([callback]) : [callback];
 };
 
 (function () {
@@ -78,6 +93,11 @@ wire.render = function () {
         'randomPrivateKeyBtn': document.getElementById('getRandomPrivateKey')
     },
     g, p, x, eg;
+
+    wire.subscribe(wire.MESSAGES.MESSAGE, function (msg) {
+        findElementsByClass(document.getElementById('messageDisplay'), 'inbox-empty')[0].style.display = 'none';
+        findElementsByClass(document.getElementById('messageDisplay'), 'inbox-has-message')[0].style.display = 'block';
+    });
 
     bind(receiver.el.getElementsByTagName('form')[0], 'submit', function (e) {
         return false;
@@ -105,6 +125,10 @@ wire.render = function () {
             receiver.generatorInfo.style.display = "block";
             receiver.generatorList.innerHTML = "";
         }
+
+        findElementsByClass(document.getElementById('messageDisplay'), 'inbox-empty')[0].style.display = 'block';
+        findElementsByClass(document.getElementById('messageDisplay'), 'inbox-has-message')[0].style.display = 'none';
+        findElementsByClass(document.getElementById('messageDisplay'), 'data')[0].innerHTML = "";
 
         if (e.preventDefault) e.preventDefault();
         else e.returnValue = false;
@@ -138,6 +162,7 @@ wire.render = function () {
             receiver.publicKey = eg.getPublicKey();
             wire.publicKey = receiver.publicKey;
             wire.render();
+            wire.publish(wire.MESSAGES.KEY, wire.publicKey);
         }
         catch (errors) {
             var i;
@@ -214,6 +239,7 @@ wire.render = function () {
         try {
             wire.message = ElGamal.encrypt(message, privateKey, wire.publicKey);
             wire.render();
+            wire.publish(wire.MESSAGES.MESSAGE, wire.message);
         } catch (errors) {
             var i;
             for (i = 0; i < errors.length; i++) {
@@ -240,3 +266,5 @@ wire.render = function () {
         document.getElementById(sender.privateKeyFieldId ).getElementsByTagName('input')[0].value = key;
     });
 }());
+
+renderMathInElement(document.body);
