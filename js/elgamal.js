@@ -45,9 +45,9 @@ var ElGamal = (function () {
     };
 
 
-    isPrime = function () {
+    isPrime = function (p) {
         //return true if prime
-        return true;
+        return PRIMES.indexOf(p) > -1;
     };
 
     isPrimitiveRoot = function (g, p) {
@@ -72,14 +72,14 @@ var ElGamal = (function () {
     isValidEncryptKey = function (y, p) {
         return (y >= 0 && y < (p - 1));
     };
-  
+
     isValidMessage = function (m, p) {
         return (m > 0 && m < p);
     };
-  
+
     validatePublicKeyFields = function (g, x, p) {
         var errors = [];
-        if (!isPrime()) {
+        if (!isPrime(p)) {
             errors.push('NOT_PRIME');
         }
         if (!isPrimitiveRoot(g, p)) {
@@ -135,12 +135,43 @@ var ElGamal = (function () {
 
     Api.getAllRoots = function (p) {
         var r, roots = [];
+
+        if (!isPrime(p)) {
+          throw Error("Enter a valid prime number");
+        }
+
         for (r = 2; r < p; r += 1) {
             if (isPrimitiveRoot(r, p)) {
                 roots.push(r);
             }
         }
+
         return roots;
+    };
+
+    Api.getAllRootsAsync = function (p, work) {
+        var r = 2;
+
+        if (!isPrime(p)) {
+          throw Error("Enter a valid prime number");
+        }
+
+        (function loop() {
+          var j, roots = [];
+          for (j = 0; j + r < p || j < 20; j += 1) {
+              if (isPrimitiveRoot(r, p)) {
+                  roots.push(r);
+              }
+              r += 1;
+          }
+          work(roots);
+
+          if (j + r < p) {
+            setTimeout(loop, 24);
+          }
+        }());
+
+        return 0;
     };
 
     Api.encrypt = function (m, y, publicKey) {

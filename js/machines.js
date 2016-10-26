@@ -6,7 +6,7 @@ var findElementsByClass = function(parentElement, className) {
         var hasClassName = new RegExp("(?:^|\\s)" + className + "(?:$|\\s)"),
             allElements = parentElement.getElementsByTagName("*"),
             element, i;
-        
+
         for (i = 0; allElements[i] !== null && allElements[i] !== undefined; i++) {
             element = allElements[i];
             var elementClass = element.className;
@@ -15,7 +15,7 @@ var findElementsByClass = function(parentElement, className) {
     }
 
     return results;
-     
+
   } else {
     results = parentElement.getElementsByClassName(className);
     return results;
@@ -56,12 +56,27 @@ var bind = (function( window, document ) {
 
 var wire = {
     'keyDisplay': findElementsByClass(document.getElementById('keyDisplay'), 'data')[0],
-    'encryptedMsgDisplay': findElementsByClass(document.getElementById('encryptedMsg'), 'data')[0]
+    'encryptedMsgDisplay': findElementsByClass(document.getElementById('encryptedMsg'), 'data')[0],
+    MESSAGES: {
+      MESSAGE: 'message',
+      KEY: 'publishKey'
+    },
+    subscribers: {}
 };
 
 wire.render = function () {
     wire.keyDisplay.innerHTML = 'p: ' + this.publicKey.p + ' g: ' + this.publicKey.g + ' h: ' + this.publicKey.h;
-    wire.encryptedMsgDisplay.innerHTML = this.message.b + ', ' + this.message.c;
+    wire.encryptedMsgDisplay.innerHTML = 'c1: ' + this.message.b + ', c2: ' + this.message.c;
+};
+
+wire.publish = function (message, data) {
+    (wire.subscribers[message] || []).forEach(function (s) {
+        s(data);
+    });
+};
+
+wire.subscribe = function (message, callback) {
+    wire.subscribers[message] = wire.subscribers[message] ? wire.subscribers[message].concat([callback]) : [callback];
 };
 
 (function () {
@@ -72,9 +87,17 @@ wire.render = function () {
         'privateKeyFieldId': 'privateKey',
         'getPublicKeyBtn': document.getElementById('getPublicKey'),
         'decryptBtn': document.getElementById('decrypt'),
-        'getGeneratorBtn': document.getElementById('getGenerators')
+        'getGeneratorBtn': document.getElementById('getGenerators'),
+        'generatorInfo': document.getElementById('generatorInfo'),
+        'generatorList': document.getElementById('selectG'),
+        'randomPrivateKeyBtn': document.getElementById('getRandomPrivateKey')
     },
     g, p, x, eg;
+
+    wire.subscribe(wire.MESSAGES.MESSAGE, function (msg) {
+        findElementsByClass(document.getElementById('messageDisplay'), 'inbox-empty')[0].style.display = 'none';
+        findElementsByClass(document.getElementById('messageDisplay'), 'inbox-has-message')[0].style.display = 'block';
+    });
 
     bind(receiver.el.getElementsByTagName('form')[0], 'submit', function (e) {
         return false;
@@ -83,13 +106,29 @@ wire.render = function () {
     bind(receiver.getGeneratorBtn, 'click', function (e) {
 
         p = parseInt(document.getElementById( receiver.primeFieldId      ).getElementsByTagName('input')[0].value, 10);
+        document.getElementById(receiver.primeFieldId).className = document.getElementById(receiver.primeFieldId).className.replace(/error/, "");
 
-        var roots = ElGamal.getAllRoots(p), i = 0, html = '';
+        var roots = [];
 
-        for (i = 0; i < roots.length; i += 1) {
-            html += roots[i] + ' ';
+        receiver.generatorInfo.style.display = "none";
+        try {
+            receiver.generatorList.innerHTML = '<select id="generatorSelect"></select>';
+            generatorListEl = document.getElementById('generatorSelect');
+            ElGamal.getAllRootsAsync(p, function (roots) {
+                generatorListEl.innerHTML += roots.map(function (r) {
+                    return '<option value="' + r + '">' + r + '</option>';
+                }).join('');
+            });
+
+        } catch (e) {
+            document.getElementById(receiver.primeFieldId).className += " error";
+            receiver.generatorInfo.style.display = "block";
+            receiver.generatorList.innerHTML = "";
         }
-        findElementsByClass(receiver.el, 'extrainfo')[0].innerHTML = html;
+
+        findElementsByClass(document.getElementById('messageDisplay'), 'inbox-empty')[0].style.display = 'block';
+        findElementsByClass(document.getElementById('messageDisplay'), 'inbox-has-message')[0].style.display = 'none';
+        findElementsByClass(document.getElementById('messageDisplay'), 'data')[0].innerHTML = "";
 
         if (e.preventDefault) e.preventDefault();
         else e.returnValue = false;
@@ -99,14 +138,21 @@ wire.render = function () {
     bind(receiver.getPublicKeyBtn, 'click', function (e) {
 
         var errorFields = findElementsByClass(receiver.el, 'error'), i = 0, publicKey;
-        
+
         for (i = 0; i < errorFields.length; i += 1) {
             errorFields[i].className = '';
         }
 
-        g = parseInt(document.getElementById( receiver.generatorFieldId  ).getElementsByTagName('input')[0].value, 10);
-        p = parseInt(document.getElementById( receiver.primeFieldId      ).getElementsByTagName('input')[0].value, 10);
-        x = parseInt(document.getElementById( receiver.privateKeyFieldId ).getElementsByTagName('input')[0].value, 10);
+        function getG() {
+            var gSelect = receiver.generatorList.getElementsByTagName('select')[0];
+
+            return parseInt(gSelect.options[gSelect.selectedIndex].value, 10);
+
+        }
+
+        g = getG();
+        p = parseInt(document.getElementById(receiver.primeFieldId      ).getElementsByTagName('input')[0].value, 10);
+        x = parseInt(document.getElementById(receiver.privateKeyFieldId ).getElementsByTagName('input')[0].value, 10);
 
 
         receiver.privateKey = x;
@@ -116,6 +162,7 @@ wire.render = function () {
             receiver.publicKey = eg.getPublicKey();
             wire.publicKey = receiver.publicKey;
             wire.render();
+            wire.publish(wire.MESSAGES.KEY, wire.publicKey);
         }
         catch (errors) {
             var i;
@@ -145,13 +192,19 @@ wire.render = function () {
             alert('Bob has not sent you a message yet.');
             return false;
         }
-        findElementsByClass(document.getElementById('messageDisplay'), 'data')[0].innerHTML = eg.decrypt(wire.message);
+        findElementsByClass(document.getElementById('messageDisplay'), 'data')[0].innerHTML = "Bob's decrypted message: " + eg.decrypt(wire.message);
 
         if (e.preventDefault) e.preventDefault();
         else e.returnValue = false;
 
     }, false);
 
+    bind(receiver.randomPrivateKeyBtn, 'click', function (e) {
+        var p = parseInt(document.getElementById( receiver.primeFieldId      ).getElementsByTagName('input')[0].value, 10);
+        var key = Math.ceil(Math.random() * p);
+
+        document.getElementById(receiver.privateKeyFieldId ).getElementsByTagName('input')[0].value = key;
+    });
 }());
 
 (function () {
@@ -160,7 +213,8 @@ wire.render = function () {
         'el': document.getElementById('bobMachine'),
         'privateKeyFieldId': 'encryptPrivate',
         'messageFieldId': 'message',
-        'encryptMsgBtn': document.getElementById('encrypt')
+        'encryptMsgBtn': document.getElementById('encrypt'),
+        'randomKeyBtn': document.getElementById('getRandomEncyptKey')
     };
 
     bind(sender.el.getElementsByTagName('form')[0], 'submit', function (e) {
@@ -185,6 +239,7 @@ wire.render = function () {
         try {
             wire.message = ElGamal.encrypt(message, privateKey, wire.publicKey);
             wire.render();
+            wire.publish(wire.MESSAGES.MESSAGE, wire.message);
         } catch (errors) {
             var i;
             for (i = 0; i < errors.length; i++) {
@@ -204,4 +259,12 @@ wire.render = function () {
 
     }, false);
 
+    bind(sender.randomKeyBtn, 'click', function (e) {
+        var p = wire.publicKey.p;
+        var key = Math.ceil(Math.random() * p);
+
+        document.getElementById(sender.privateKeyFieldId ).getElementsByTagName('input')[0].value = key;
+    });
 }());
+
+renderMathInElement(document.body);
