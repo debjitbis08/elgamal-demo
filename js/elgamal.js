@@ -182,7 +182,7 @@ var ElGamal = (function () {
         }
         return {
             b: powmod(publicKey.g, y, publicKey.p),
-            c: (m * (powmod(publicKey.h, y, publicKey.p)))
+            c: (m * (powmod(publicKey.h, y, publicKey.p))) % publicKey.p
         };
     };
 
